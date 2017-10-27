@@ -6,3 +6,4 @@ __pycache__
 ignore
 keystore.json
 parameters.json
+flake8
