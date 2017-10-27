@@ -78,7 +78,6 @@ def is_complex(x):
 	return int(isinstance(x, complex))
 
 
-
 def array_length(x):
 	if not isinstance(x, (Array, Interval)):
 		raise EvaluationError('Cannot get the length of non-array object')
@@ -112,6 +111,62 @@ def array_expand(*arrays):
 			raise EvaluationError('Cannot expand non-array')
 	return Expanded(arrays)
 
+
+def make_list(*items):
+	lst = EmptyList()
+
+	for i in items[::-1]:
+		lst = Cons(i, lst)
+	
+	return lst
+
+
+def is_list(lst):
+	if isinstance(lst, EmptyList):
+		return True
+
+	if isinstance(lst, Cons):
+		return is_list(lst.rest)
+
+	return False
+
+
+def is_empty(lst):
+	return isinstance(lst, EmptyList)
+
+
+def first(lst):
+	if not isinstance(lst, Cons):
+		raise EvaluationError('Cannot access first of non-cons-cell')
+	
+	return lst.first
+
+
+def rest(lst):
+	if not isinstance(lst, Cons):
+		raise EvaluationError('Cannot access rest of non-cons-cell')
+	
+	return lst.rest
+
+
+def reverse_list(lst):
+	if not is_list(lst):
+		raise EvaluationError('Cannot reverse non-list')
+
+	return lst.foldl(EmptyList(), Cons)
+
+
+def map_list(f, lst):
+	if not is_list(lst):
+		raise EvaluationError('Cannot map over non-list')
+	
+	mapped = lst.foldl(EmptyList(), lambda elem, acc: Cons(f(elem), acc))
+	return reverse_list(mapped)
+
+
+def check(lst):
+	for i in lst:
+		print(i)
 
 def make_range(start, end):
 	if not isinstance(start, int):
@@ -166,7 +221,15 @@ BUILTIN_FUNCTIONS = {
 	'expand': array_expand,
 	'im': lambda x: x.imag,
 	're': lambda x: x.real,
-	'range': make_range
+	'range': make_range,
+	'cons': lambda x, y: Cons(x, y),
+	'list': make_list,
+	'is_list': is_list,
+	'first': first,
+	'rest': rest,
+	'reverse_list': reverse_list,
+	'map_list': map,
+	'check': check
 }
 
 
@@ -178,7 +241,8 @@ FIXED_VALUES = {
 	'euler_gamma': 0.577215664901,
 	'tau': math.pi * 2,
 	'true': 1,
-	'false': 0
+	'false': 0,
+	'[]': EmptyList()
 }
 
 

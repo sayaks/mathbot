@@ -47,6 +47,74 @@ class Array:
 		return str(self)
 
 
+class Cons:
+
+	def __init__(self, first, rest):
+		self.first = first
+		self.rest = rest
+
+	def __len__(self):
+		return 1 + len(self.rest)
+	
+	# TODO: Make this look nice
+	def __str__(self):
+		if isinstance(self.rest, EmptyList):
+			return f'[{str(self.first)}]'
+
+		return self.rest.foldr(f'[{str(self.first)}',
+							lambda acc, elem: acc + ', ' + str(elem)) + ']'
+
+	def __repr__(self):
+		return str(self)
+	
+	def __iter__(self):
+		curr = self
+		
+		class ConsIter:
+			
+			def __init__(self, curr):
+				self.curr = curr
+
+			def __next__(self):
+				if isinstance(self.curr, EmptyList):
+					raise StopIteration()
+
+				r = self.curr.first
+				self.curr = self.curr.rest
+				return r
+		
+		return ConsIter(curr)
+
+
+	def foldr(self, acc, f):
+		curr = self
+
+		while not isinstance(curr, EmptyList):
+			acc = f(acc, curr.first)
+			curr = curr.rest
+		
+		return acc
+
+	def foldl(self, acc, f):
+		curr = self
+
+		while not isinstance(curr, EmptyList):
+			acc = f(curr.first, acc)
+			curr = curr.rest
+		
+		return acc
+
+class EmptyList:
+
+	def __len__(self):
+		return 0
+
+	def __str__(self):
+		return '[]'
+
+	def __repr__(self):
+		return str(self)
+
 class SingularValue:
 
 	def __init__(self, item):
