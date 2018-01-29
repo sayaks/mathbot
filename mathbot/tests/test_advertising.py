@@ -6,7 +6,7 @@ import pytest
 
 import conftest
 
-@pytest.fixture(scope = 'function', autouse=True)
+@pytest.fixture(scope = 'function')
 def parameters(request):
     sources_bak = core.parameters.sources
     core.parameters.reset()
@@ -27,6 +27,7 @@ async def test_no_advertise(parameters):
 
 @conftest.automata_test
 async def test_advertise(interface):
+    sources_bak = core.parameters.sources    
     core.parameters.reset()
     core.parameters.add_source({'advertising': {'enable': True}})
     keys_bak = await core.keystore.get('advert_counter')
@@ -38,3 +39,5 @@ async def test_advertise(interface):
     # HACK: no good way of doing this as of rn
     patrons.PATRONS = {}
     await core.keystore.set('advert_counter', interface.channel.id, keys_bak)
+    core.parameters.reset(False)
+    core.parameters.sources = sources_bak
