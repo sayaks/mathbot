@@ -6,6 +6,7 @@ import pytest
 
 import conftest
 
+
 @pytest.mark.asyncio
 async def test_no_advertise(parameters):
     '''
@@ -15,30 +16,41 @@ async def test_no_advertise(parameters):
     parameters.add_source({'advertising': {'enable': False}})
     assert(not await advertising.should_advertise_to(None, None))
 
+
 # BUG: automata basically doesn't let you use other fixtures
 @conftest.automata_test
 async def test_advertise(interface):
-    sources_bak = core.parameters.sources
-    core.parameters.reset()
+    '''
+    This test checks that if the advertising counter goes above the limit,
+    and the user is not a patron, then they should get ads.
+    '''
+    sources_bak = conftest.clear_parameters()
     core.parameters.add_source({'advertising': {'enable': True}})
+
     keys_bak = await core.keystore.get('advert_counter', interface.channel.id)
-    await core.keystore.set('advert_counter', interface.channel.id, core.parameters.get('advertising interval') + 1)
+    await core.keystore.set('advert_counter',
+                            interface.channel.id,
+                            core.parameters.get('advertising interval') + 1)
     patrons.PATRONS = {interface.target.id: patrons.TIER_NONE}
 
-    assert(await advertising.should_advertise_to(interface.target, interface.channel))
+    assert(await advertising.should_advertise_to(interface.target,
+                                                 interface.channel))
 
-    # HACK: no good way of doing this as of rn
     patrons.PATRONS = {}
     await core.keystore.set('advert_counter', interface.channel.id, keys_bak)
-    core.parameters.reset(False)
-    core.parameters.sources = sources_bak
+    conftest.reset_parameters(sources_bak)
+
 
 # BUG: automata basically doesn't let you use other fixtures
 @conftest.automata_test
 async def test_increment_adcount(interface):
-    sources_bak = core.parameters.sources
+    '''
+    This checks that the advert counter is incremented if the user is not
+    a patron.
+    '''
+    sources_bak = conftest.clear_parameters()
+
     starting_count = core.parameters.get('advertising starting-amount')
-    core.parameters.reset()
     core.parameters.add_source({'advertising': {'enable': True}})
     await core.keystore.set('advert_counter',
                             interface.channel.id,
@@ -47,15 +59,27 @@ async def test_increment_adcount(interface):
 
     await advertising.should_advertise_to(interface.target, interface.channel)
 
-    assert(await core.keystore.get('advert_counter', interface.channel.id) > starting_count)
+    assert await\
+        core.keystore.get('advert_counter', interface.channel.id)\
+        >\
+        starting_count
 
-    # HACK: no good way of doing this as of rn
     patrons.PATRONS = {}
-    core.parameters.reset(False)
-    core.parameters.sources = sources_bak
+    conftest.reset_parameters(sources_bak)
+
 
 # BUG: automata basically doesn't let you use other fixtures
 @conftest.automata_test
 async def test_patron_ads(interface):
+    '''
+    This checks that patrons do not get ads.
+    '''
+    sources_bak = conftest.clear_parameters()
+    core.parameters.add_source({'advertising': {'enable': True}})
     patrons.PATRONS = {interface.target.id: patrons.TIER_CONSTANT}
-    assert(not await advertising.should_advertise_to(interface.target, interface.channel))
+
+    assert(not await advertising.should_advertise_to(interface.target,
+                                                     interface.channel))
+
+    patrons.PATRONS = {}
+    conftest.reset_parameters(sources_bak)

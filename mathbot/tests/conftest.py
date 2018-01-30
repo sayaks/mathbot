@@ -132,12 +132,22 @@ def __automata_fixture():
 ### non-automata stuff ##################
 #########################################
 
-@pytest.fixture(scope = 'function')
-def parameters(request):
+# HACK: no good way of doing this as of rn
+def clear_parameters():
     sources_bak = core.parameters.sources
     core.parameters.reset()
+    return sources_bak
+
+# HACK: no good way of doing this as of rn
+def reset_parameters(sources):
+    core.parameters.reset(False)
+    core.parameters.sources = sources
+
+
+@pytest.fixture(scope = 'function')
+def parameters(request):
+    sources_bak = clear_parameters()
     yield core.parameters
 
     # HACK: there isn't an idiomatic way of doing this yet
-    core.parameters.reset(False)
-    core.parameters.sources = sources_bak
+    reset_parameters(sources_bak)
