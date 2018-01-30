@@ -9,6 +9,9 @@ import pytest
 
 from conftest import automata_test, automata_test_human
 
+need_wolfram = pytest.mark.skipif(not core.parameters.get('wolfram key'),
+                                  reason='You need to add a Wolfram Alpha API key')
+
 # @auto.setup()
 # async def setup(interface):
 #     await interface.wait_for_reply('=set channel f-delete-tex original')
@@ -104,8 +107,7 @@ async def test_latex_inline(interface):
 #     await interface.ask_human('Does the above message have an image that says `Two`?')
 
 
-@pytest.mark.skipif(not core.parameters.get('wolfram key'),
-                    reason='You need to add a Wolfram Alpha API key')
+@need_wolfram
 @automata_test
 async def test_wolfram_simple(interface):
     await interface.send_message('=wolf hello')
@@ -119,8 +121,7 @@ async def test_wolfram_simple(interface):
     assert num_images > 0
 
 
-@pytest.mark.skipif(not core.parameters.get('wolfram key'),
-                    reason='You need to add a Wolfram Alpha API key')
+@need_wolfram
 @automata_test
 async def test_wolfram_pup_simple(interface):
     await interface.send_message('=pup solve (x + 3)(2x - 5)')
@@ -129,8 +130,7 @@ async def test_wolfram_pup_simple(interface):
     await interface.ensure_silence()
 
 
-@pytest.mark.skipif(not core.parameters.get('wolfram key'),
-                    reason='You need to add a Wolfram Alpha API key')
+@need_wolfram
 @automata_test
 async def test_wolfram_no_data(interface):
     await interface.send_message('=wolf cos(x^x) = sin(y^y)')
