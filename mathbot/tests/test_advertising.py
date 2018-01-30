@@ -49,9 +49,9 @@ async def test_increment_adcount(interface):
     a patron.
     '''
     sources_bak = conftest.clear_parameters()
-
-    starting_count = core.parameters.get('advertising starting-amount')
     core.parameters.add_source({'advertising': {'enable': True}})
+    starting_count = core.parameters.get('advertising starting-amount')
+
     await core.keystore.set('advert_counter',
                             interface.channel.id,
                             starting_count)
