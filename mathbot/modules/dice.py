@@ -36,6 +36,7 @@ class DiceModule(Cog):
 		dice, faces = match.group(1, 2)
 		dice = int(dice or 1)
 		faces = int(faces or 6)
+
 		if faces <= 0:
 			return '🎲 Dice must have a positive number of faces.'
 
@@ -48,7 +49,7 @@ class DiceModule(Cog):
 		# I got this by assuming each die rolled 1, plus 1 space per die
 		# giving me 2 * dice. Then i add the length of the total, and the
 		# length of the extra stuff that's always in the result.
-		min_len = 2 * dice + 9 + math.log10(dice)
+		min_len = 0 if dice <= 0 else 2 * dice + 9 + math.log10(dice)
 
 		# gaussian roll is faster so try that if we can't show all the rolls
 		if min_len >= limit:
